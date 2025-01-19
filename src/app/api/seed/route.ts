@@ -1,9 +1,19 @@
-import db from "../../../db";
-import { advocates } from "../../../db/schema";
-import { advocateData } from "../../../db/seed/advocates";
+import { AdvocateService } from "@/db/AdvocateService";
+import { Advocate } from "@/app/api/advocates/types";
 
-export async function POST() {
-  const records = await db.insert(advocates).values(advocateData).returning();
+interface BulkInsertResponse {
+  advocates: Advocate[];
+}
 
-  return Response.json({ advocates: records });
+export async function POST(request: Request): Promise<Response> {
+  const data = (await request.json()) as Advocate;
+
+  const advocateService = new AdvocateService();
+  const records: Advocate[] = await advocateService.bulkCreateAdvocates([data]);
+
+  const responsePayload: BulkInsertResponse = { advocates: records };
+
+  return new Response(JSON.stringify(responsePayload), {
+    headers: { "Content-Type": "application/json" },
+  });
 }
